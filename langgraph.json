@@ -2,8 +2,9 @@
   "dependencies": ["."],
   "graphs": {
     "agent": "./src/agent/graph.py:graph",
-    "receipt_agent": "./src/agent/receipt_regnoice.py:receipt_regnoice",
-    "image_agent": "./src/agent/generate_image.py:generate_image"
+    "receipt_regnoice_workflow": "./src/agent/receipt_regnoice_workflow.py:receipt_regnoice_workflow",
+    "generate_image_workflow": "./src/agent/generate_image.py:generate_image_workflow",
+    "contract_review_workflow": "./src/agent/contract_review_workflow.py:contract_review_workflow"
   },
   "env": ".env"
 }

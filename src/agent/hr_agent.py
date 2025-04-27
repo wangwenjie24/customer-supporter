@@ -16,97 +16,67 @@ from agent.prompts import hr_instructions
 
 from typing import Literal
 
+# 加载环境变量
 dotenv.load_dotenv()
+
 
 @tool
 def query_policy(query: str) -> str:
-    """Query information about company HR related policy.
-    
     """
+    Query company human resources related policy information.
+    
+    Args:
+        query: 查询关键词
+        
+    Returns:
+        查询结果字符串
+    """
+    # 获取流式写入器用于实时反馈
     writer = get_stream_writer()
     writer({"action": "检索人力资源制度"})
-    klResponse = requests.get(f'http://47.251.17.61/saiyan-ai/ai/knowledge/1914967712749383680/search?query={query}')
+    
+    # 调用知识库API检索HR制度信息
+    klResponse = requests.get(f'{os.getenv("HR_KNOWLEDGE_BASE_URL")}?query={query}')
     data = klResponse.json()['data']
+    
+    # 格式化检索结果
     result = ''
-    for index,item in enumerate(data):
+    for index, item in enumerate(data):
         result += f'片段{index + 1}：{item["content"]}\n'
+    
+    # 处理无结果情况
     if not result:
         result = '抱歉，没有查询到相关的HR制度或政策信息。'
+        
     writer({"action": "检索人力资源制度"})
     return result
 
-@tool
-def query_position(name: str) -> str:
-    """Query employee position information.
-
-    Args:
-        name (str): 员工姓名。
-    """
-    return f"{name}的岗位信息：总经理"
-    # writer = get_stream_writer()
-    # writer({"action": "查询岗位信息"})
-    # klResponse = requests.get(f'http://47.251.17.61/saiyan-ai/rz/queryUserPost?name={name}')
-    # data = klResponse.json()['data']
-    # if not data or len(data) == 0:
-    #     writer({"action": "查询岗位信息"})
-    #     return f"抱歉，未找到{name}的岗位信息。"
-    # else:
-    #     writer({"action": "查询岗位信息"})
-    #     return f"{name}的岗位信息：{data}"
-
-@tool
-def query_department_head(department: str) -> str:
-    """Query department head information.
-    
-    Args:
-        department (str): 部门名称。
-    """
-    writer = get_stream_writer()
-    writer({"action": "查询部门负责人"})
-    
-    klResponse = requests.get(f'http://47.251.17.61/saiyan-ai/rz/queryDeptManager?name={department}')
-    data = klResponse.json()['data']
-    if not data or len(data) == 0:
-        writer({"action": "查询部门负责人"})
-        return f"抱歉，未找到{department}的负责人信息。"
-    else:
-        writer({"action": "查询部门负责人"})
-        return f"{department}的负责人是：{data}"
-
-@tool
-def query_invalid_attendance() -> str:
-    """Query employees with invalid attendance records.
-    
-    Args:
-        department (str): 部门名称。
-    """
-    writer = get_stream_writer()
-    writer({"action": "查询打卡记录无效人员"})
-    
-    klResponse = requests.get(f'http://47.251.17.61/saiyan-ai/rz/queryKq')
-    data = klResponse.json()['data']
-    if not data or len(data) == 0:
-        writer({"action": "查询打卡记录无效人员"})
-        return f"抱歉，未找到的打卡记录无效人员信息。"
-    else:
-        writer({"action": "查询打卡记录无效人员"})
-        return f"打卡记录无效人员是：{data}"
-
 
 def call_llm(state, config: RunnableConfig):
-    # Get the configuration
+    """
+    调用大语言模型处理HR查询
+    
+    Args:
+        state: 当前状态
+        config: 可运行配置
+        
+    Returns:
+        包含模型响应的字典
+    """
+    # 获取配置信息
     configuration = Configuration.from_runnable_config(config)
     user_title = configuration.user_title
 
-    # Format the recognizer instructions
-    hr_instructions_formatted  = hr_instructions.format(user_title=user_title)
+    # 格式化HR指令，插入用户职称
+    hr_instructions_formatted = hr_instructions.format(user_title=user_title)
 
+    # 调用大语言模型并绑定工具
     response = ChatOpenAI(
         model_name="gpt-4o-mini",
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         temperature=0.0,
         tags=["call_hr"]
-    ).bind_tools([query_policy, query_position, query_department_head, query_invalid_attendance]).invoke([
+    ).bind_tools([query_policy]).invoke([
         SystemMessage(content=hr_instructions_formatted),
         *state.messages
     ])
@@ -114,21 +84,33 @@ def call_llm(state, config: RunnableConfig):
 
 
 def route_model_output(state: State) -> Literal["__end__", "tools"]:
+    """
+    根据模型输出决定下一步操作
+    
+    Args:
+        state: 当前状态
+        
+    Returns:
+        下一步操作的标识符
+    """
     last_message = state.messages[-1]
     if not isinstance(last_message, AIMessage):
         raise ValueError(
             f"Expected AIMessage in output edges, but got {type(last_message).__name__}"
         )
-    # If there is no tool call, then we finish
+    # 如果没有工具调用，则结束流程
     if not last_message.tool_calls:
         return "__end__"
-    # Otherwise we execute the requested actions
+    # 否则执行请求的工具操作
     return "tools"
 
 
+# 构建状态图
 builder = StateGraph(State, config_schema=Configuration)
+# 添加节点
 builder.add_node("agent", call_llm)
-builder.add_node("tools", ToolNode([query_policy, query_position, query_department_head, query_invalid_attendance]))
+builder.add_node("tools", ToolNode([query_policy]))
+# 添加边，定义节点间的连接关系
 builder.add_edge("__start__", "agent")
 builder.add_conditional_edges(
     "agent",
@@ -136,5 +118,5 @@ builder.add_conditional_edges(
 )
 builder.add_edge("tools", "agent")
 
+# 编译图形为可执行代理
 hr_agent = builder.compile(name="hr_agent")
-

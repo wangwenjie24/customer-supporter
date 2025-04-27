@@ -38,6 +38,6 @@ services:
             - .env
         environment:
             REDIS_URI: redis://langgraph-redis:6379
-            LANGSMITH_API_KEY: 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
+            LANGSMITH_API_KEY: ${LANGSMITH_API_KEY}
             POSTGRES_URI: postgres://postgres:postgres@langgraph-postgres:5432/postgres?sslmode=disable
             OPENAI_API_KEY: ${OPENAI_API_KEY}

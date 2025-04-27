@@ -1,5 +1,3 @@
-"""Define the configurable parameters for the agent."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
@@ -10,7 +8,6 @@ from langchain_core.runnables import RunnableConfig
 
 @dataclass(kw_only=True)
 class Configuration:
-    """The configuration for the agent."""
 
     user_title: str = ""
     user_id: str = ""

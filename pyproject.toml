@@ -11,18 +11,13 @@ requires-python = ">=3.9"
 dependencies = [
     "langgraph>=0.2.6",
     "python-dotenv>=1.0.1",
-    "langgraph-supervisor>=0.0.15",
-    "langchain-ollama>=0.3.0",
-    "langgraph-supervisor>=0.0.15",
     "langchain-openai>=0.3.12",
     "langchain-unstructured>=0.1.5",
     "unstructured>=0.17.2",
     "unstructured[pdf]",
     "langchain-community>=0.3.22",
     "dashscope>=1.23.1",
-    "PyMuPDF>=1.25.5",
-    "pymysql>=1.1.1",
-    "mysql-connector-python>=9.3.0"
+    "PyMuPDF>=1.25.5"
 ]
 
 
