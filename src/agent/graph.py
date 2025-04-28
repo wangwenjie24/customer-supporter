@@ -88,7 +88,7 @@ def generate_image_agent(state: State):
     Returns:
         包含生成图片URL的字典
     """
-    result = generate_image_workflow.invoke({"prompt": state.messages[-1].content, "action": "optimize_prompt"})
+    result = generate_image_workflow.invoke({"prompt": state.messages[-1].content, "action": "generate_image"})
     return {"messages": [AIMessage(content=result["urls"][0])]}
 
 
@@ -135,10 +135,8 @@ graph = builder.compile(name="Customer Supporter", checkpointer=checkpointer)
 # "请站在甲方角度分析以下合同文本中的法律风险。合同路径：http://47.251.17.61/saiyan-ai/system/file/downloadById?id=1914982139343204352"
 
 # if __name__ == "__main__":
-#     inputs = {"messages": [("user", "你是谁？")], "action": "receipt_agent", "receipt_image": "https://cdn.nlark.com/yuque/0/2025/png/34020404/1744543760660-5ad0c14a-4689-48bd-9fa8-efb2bf0c3323.png?x-oss-process=image%2Fformat%2Cwebp%2Fresize%2Cw_1426%2Climit_0"}
+#     inputs = {"messages": [("user", "帮我生成一个六一儿童节的宣传照片，要求 要有男孩3个女孩2个 拉上气球在草地奔跑")], "action": "generate_image_agent", "receipt_image": "https://cdn.nlark.com/yuque/0/2025/png/34020404/1744543760660-5ad0c14a-4689-48bd-9fa8-efb2bf0c3323.png?x-oss-process=image%2Fformat%2Cwebp%2Fresize%2Cw_1426%2Climit_0"}
 #     # inputs = {"messages": [("user", "   请站在甲方角度分析以下合同文本中的法律风险。合同路径：http://47.251.17.61/saiyan-ai/system/file/downloadById?id=1914982139343204352")], "action": "corporate_legal_agent"}
-
-
 
 #     current_agent = None
 #     for stream_mode, streamed_output in graph.stream(inputs, stream_mode=["messages", "custom", "values"], config={"configurable": {"thread_id": "2", "user_id": "10001", "user_title": "万书记"}}):
@@ -149,7 +147,7 @@ graph = builder.compile(name="Customer Supporter", checkpointer=checkpointer)
 #         # print(stream_mode, streamed_output)
 #         if stream_mode == "messages" and isinstance(streamed_output, tuple) and len(streamed_output) > 1:
 #             chunk, metadata = streamed_output
-#             if metadata.get("langgraph_node", "") == "agent" or metadata.get("langgraph_node", "") == "finalinze_output":
+#             if metadata.get("langgraph_node", "") == "agent" or metadata.get("langgraph_node", "") == "finalinze_output" or metadata.get("langgraph_node", "") == "generate_image_agent":
 #                 print(chunk.content, end="", flush=True)
 
 

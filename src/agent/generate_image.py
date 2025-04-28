@@ -127,7 +127,7 @@ def optimize_prompt(state: State, config: RunnableConfig) -> Dict[str, str]:
     
     # 调用大语言模型
     result = ChatOpenAI(
-        model_name="Qwen/Qwen2.5-72B-Instruct",
+        model_name="gpt-4",
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         temperature=0.0
     ).invoke([

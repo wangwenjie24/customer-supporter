@@ -28,7 +28,7 @@ def query_policy(query: str) -> str:
     writer({"action": "检索财务制度"})
     
     # 调用知识库API检索财务制度信息
-    klResponse = requests.get(f'{os.getenv("KNOWLEDGE_BASE_URL")}?query={query}')
+    klResponse = requests.get(f'{os.getenv("FINANCIAL_KNOWLEDGE_BASE_URL")}?query={query}')
     data = klResponse.json()['data']
     
     # 格式化检索结果
