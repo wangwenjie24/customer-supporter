@@ -5,8 +5,6 @@ import pymysql
 import redis
 import uuid
 
-from langchain.chat_models import init_chat_model
-from langchain.embeddings import init_embeddings
 from langgraph.store.memory import InMemoryStore
 from langgraph_bigtool import create_agent
 from langchain_core.tools import StructuredTool
@@ -161,7 +159,6 @@ for item in tool_list:
     )
 
 
-print(tool_registry)
 # =================== 向量存储初始化 ===================
 
 # 初始化 OpenAI 嵌入模型
@@ -190,10 +187,6 @@ for tool_id, tool in tool_registry.items():
     )
 
 # =================== 代理初始化 ===================
-
-# 初始化大语言模型
-# llm = init_chat_model("openai:gpt-4o-mini")
-
 llm = ChatOpenAI(
     model_name=os.getenv("OPENROUTER_MODEL_NAME"),
     openai_api_key=os.getenv("OPENROUTER_API_KEY"),
@@ -209,27 +202,27 @@ builder = create_agent(llm, tool_registry)
 financial_data_agent = builder.compile(store=store, name="financial_data_agent")
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    user_title = "王院长"
+#     user_title = "王院长"
         
-    # 格式化指令
-    financial_data_researcher_instructions_formatted = financial_data_researcher_instructions.format(user_title=user_title)
+#     # 格式化指令
+#     financial_data_researcher_instructions_formatted = financial_data_researcher_instructions.format(user_title=user_title)
         
-    # 构造消息列表
-    messages = [
-        SystemMessage(content=financial_data_researcher_instructions_formatted),
-        HumanMessage(content="2024年2月佛山电器照明股份有限公司营业收入是多少？")
-    ]
+#     # 构造消息列表
+#     messages = [
+#         SystemMessage(content=financial_data_researcher_instructions_formatted),
+#         HumanMessage(content="2024年2月佛山电器照明股份有限公司营业收入是多少？")
+#     ]
 
-    inputs = {"messages": messages}
-    for stream_mode, streamed_output in financial_data_agent.stream(inputs, stream_mode=["messages", "custom", "values"], config={"configurable": {"thread_id": "2", "user_id": "10001", "user_title": "万书记"}}):
-        # 如果是代理的消息，显示代理名称和内容
+#     inputs = {"messages": messages}
+#     for stream_mode, streamed_output in financial_data_agent.stream(inputs, stream_mode=["messages", "custom", "values"], config={"configurable": {"thread_id": "2", "user_id": "10001", "user_title": "万书记"}}):
+#         # 如果是代理的消息，显示代理名称和内容
 
-        if stream_mode == "custom":
-            print(streamed_output)
-        # print(stream_mode, streamed_output)
-        if stream_mode == "messages" and isinstance(streamed_output, tuple) and len(streamed_output) > 1:
-            chunk, metadata = streamed_output
-            if metadata.get("langgraph_node", "") == "agent" or metadata.get("langgraph_node", "") == "finalinze_output" or metadata.get("langgraph_node", "") == "generate_image_agent":
-                print(chunk.content, end="", flush=True)
+#         if stream_mode == "custom":
+#             print(streamed_output)
+#         # print(stream_mode, streamed_output)
+#         if stream_mode == "messages" and isinstance(streamed_output, tuple) and len(streamed_output) > 1:
+#             chunk, metadata = streamed_output
+#             if metadata.get("langgraph_node", "") == "agent" or metadata.get("langgraph_node", "") == "finalinze_output" or metadata.get("langgraph_node", "") == "generate_image_agent":
+#                 print(chunk.content, end="", flush=True)

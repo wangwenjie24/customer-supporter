@@ -1,7 +1,6 @@
 import base64
 import requests
 import os.path
-import redis
 import dotenv
 
 dotenv.load_dotenv()

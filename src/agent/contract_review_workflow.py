@@ -98,8 +98,9 @@ def analyze_contract_risk(state: RiskAnalysisState) -> str:
     
     # 调用LLM分析合同风险
     response = ChatOpenAI(
-        model_name="gpt-4o-mini",
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
+        model_name=os.getenv("OPENROUTER_MODEL_NAME"),
+        openai_api_key=os.getenv("OPENROUTER_API_KEY"),
+        openai_api_base=os.getenv("OPENROUTER_API_BASE"),
         temperature=0.0,
         tags=["call_analyze_contract_risk"]
     ).invoke([
