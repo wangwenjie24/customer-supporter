@@ -4,13 +4,14 @@ from dataclasses import dataclass, field
 from typing_extensions import Annotated
 from langgraph.graph import add_messages
 from langchain_core.messages import AnyMessage
+from typing import Literal
 
 
 @dataclass
 class State:
     """状态类，用于存储工作流中的状态信息"""
     # 当前执行的动作名称
-    action: str
+    action: Literal["hr_agent", "financial_agent", "corporate_legal_agent", "receipt_regnoice_agent", "generate_image_agent", "financial_data_agent","hr_data_agent"]
     
     # 消息列表，使用 add_messages 注解实现消息追加功能
     messages: Annotated[list[AnyMessage], add_messages]

@@ -75,9 +75,9 @@ def categorize(state: State, config: RunnableConfig) -> Command[Literal["extract
     
     # 调用大模型进行票据类型识别
     result = ChatOpenAI(
-        model_name="Qwen/Qwen2.5-VL-72B-Instruct",
-        openai_api_key=os.getenv("MODEL_SCOPE_API_KEY"),
-        openai_api_base=os.getenv("MODEL_SCOPE_API_BASE"),
+        model_name="qwen2.5-vl-72b-instruct",
+        openai_api_key=os.getenv("DASHSCOPE_API_KEY"),
+        openai_api_base=os.getenv("DASHSCOPE_API_BASE"),
         temperature=0.0
     ).invoke([
         SystemMessage(content=categorizer_instructions_formatted),
@@ -133,9 +133,9 @@ def extract(state: State, config: RunnableConfig) -> Command[Literal["finalinze_
     
     # 调用大模型提取票据信息
     result = ChatOpenAI(
-        model_name="Qwen/Qwen2.5-VL-72B-Instruct",
-        openai_api_key=os.getenv("MODEL_SCOPE_API_KEY"),
-        openai_api_base=os.getenv("MODEL_SCOPE_API_BASE"),
+        model_name="qwen2.5-vl-72b-instruct",
+        openai_api_key=os.getenv("DASHSCOPE_API_KEY"),
+        openai_api_base=os.getenv("DASHSCOPE_API_BASE"),
         temperature=0.0
     ).invoke([
         SystemMessage(content=extractor_instructions_formatted),

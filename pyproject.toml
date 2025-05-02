@@ -17,7 +17,11 @@ dependencies = [
     "unstructured[pdf]",
     "langchain-community>=0.3.22",
     "dashscope>=1.23.1",
-    "PyMuPDF>=1.25.5"
+    "PyMuPDF>=1.25.5",
+    "redis>=5.2.1",
+    "langgraph_bigtool>=0.0.2",
+    "PyMySQL>=1.1.1",
+    "redis>=5.2.1"
 ]
 
 

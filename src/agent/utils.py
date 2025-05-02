@@ -1,6 +1,10 @@
 import base64
 import requests
 import os.path
+import redis
+import dotenv
+
+dotenv.load_dotenv()
 
 def image_to_base64(image_path: str) -> str:
     """

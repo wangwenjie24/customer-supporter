@@ -10,6 +10,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode
 
+
 from agent.configuration import Configuration
 from agent.state import State
 from agent.prompts import hr_instructions
@@ -41,7 +42,9 @@ def query_policy(query: str) -> str:
     
     # 格式化检索结果
     result = ''
+    source = ''
     for index, item in enumerate(data):
+        source += item['metadata']['fileName'] + '\n'
         result += f'片段{index + 1}：{item["content"]}\n'
     
     # 处理无结果情况
@@ -49,6 +52,7 @@ def query_policy(query: str) -> str:
         result = '抱歉，没有查询到相关的HR制度或政策信息。'
         
     writer({"action": "检索人力资源制度"})
+    result = result + '\n 数据来源：' + source 
     return result
 
 
@@ -72,8 +76,9 @@ def call_llm(state, config: RunnableConfig):
 
     # 调用大语言模型并绑定工具
     response = ChatOpenAI(
-        model_name="gpt-4o-mini",
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
+        model_name=os.getenv("OPENROUTER_MODEL_NAME"),
+        openai_api_key=os.getenv("OPENROUTER_API_KEY"),
+        openai_api_base=os.getenv("OPENROUTER_API_BASE"),
         temperature=0.0,
         tags=["call_hr"]
     ).bind_tools([query_policy]).invoke([

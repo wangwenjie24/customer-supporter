@@ -28,12 +28,15 @@ def query_policy(query: str) -> str:
     writer({"action": "检索财务制度"})
     
     # 调用知识库API检索财务制度信息
-    klResponse = requests.get(f'{os.getenv("FINANCIAL_KNOWLEDGE_BASE_URL")}?query={query}')
+    klResponse = requests.get(f'{os.getenv("FINANCIAL_KNOWLEDGE_BASE_URL")}?query={query}')    
     data = klResponse.json()['data']
     
     # 格式化检索结果
     result = ''
+    source = ''
     for index, item in enumerate(data):
+        print(item)
+        source += item['metadata']['fileName'] + '\n'
         result += f'片段{index + 1}：{item["content"]}\n'
     
     # 处理无结果情况
@@ -41,6 +44,7 @@ def query_policy(query: str) -> str:
         result = '抱歉，没有查询到相关的财务制度或政策信息!'
         
     writer({"action": "检索财务制度"})
+    result = result + '\n 数据来源：' + source 
     return result
 
 def call_llm(state, config: RunnableConfig):
@@ -63,8 +67,9 @@ def call_llm(state, config: RunnableConfig):
 
     # 调用大语言模型并绑定工具
     response = ChatOpenAI(
-        model_name="gpt-4o-mini",
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
+        model_name="qwen-plus",
+        openai_api_key=os.getenv("DASHSCOPE_API_KEY"),
+        openai_api_base=os.getenv("DASHSCOPE_API_BASE"),
         temperature=0.0,
         tags=["call_financial"]
     ).bind_tools([query_policy]).invoke([

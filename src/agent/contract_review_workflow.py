@@ -106,7 +106,7 @@ def analyze_contract_risk(state: RiskAnalysisState) -> str:
         SystemMessage(content="""You are a corporate legal expert with access to check contract risk.
     Analyze the legal risks in the contract text from perspectives including payment and settlement terms, delivery and acceptance terms, breach of contract liability, intellectual property clauses, confidentiality provisions, applicable law and dispute resolution clauses, and other terms.
             """),
-        HumanMessage(content=f"请站在{analysis_angle}分析以下合同文本中的法律风险并给出相应的建议, 合同内容:\n\n{contract_content}")
+        HumanMessage(content=f"请站在{analysis_angle}分析以下合同文本中的法律风险并给出相应的建议，建议需要具体化，可以举例说明。合同内容:\n\n{contract_content}")
     ])
     writer({"action": "分析合同内容"})
     return {"risk_analysis_result": response.content}
