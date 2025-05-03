@@ -67,9 +67,9 @@ def call_llm(state, config: RunnableConfig):
 
     # 调用大语言模型并绑定工具
     response = ChatOpenAI(
-        model_name="qwen-plus",
-        openai_api_key=os.getenv("DASHSCOPE_API_KEY"),
-        openai_api_base=os.getenv("DASHSCOPE_API_BASE"),
+        model_name=os.getenv("OPENROUTER_MODEL_NAME"),
+        openai_api_key=os.getenv("OPENROUTER_API_KEY"),
+        openai_api_base=os.getenv("OPENROUTER_API_BASE"),
         temperature=0.0,
         tags=["call_financial"]
     ).bind_tools([query_policy]).invoke([

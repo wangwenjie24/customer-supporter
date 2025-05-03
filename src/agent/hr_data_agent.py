@@ -161,7 +161,7 @@ for item in tool_list:
 # 初始化 OpenAI 嵌入模型
 embeddings = DashScopeEmbeddings(
     model="text-embedding-v3",
-    dashscope_api_key=os.getenv("DASHSCOPE_API_KEY")
+    dashscope_api_key=os.getenv("DASHSCOPE_EMBEDDINGS_API_KEY")
 )
 
 # 创建内存存储
