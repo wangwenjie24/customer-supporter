@@ -7,7 +7,6 @@ from dataclasses import dataclass
 
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_community.document_loaders import UnstructuredWordDocumentLoader
 from langgraph.graph import StateGraph
 
 from langgraph.config import get_stream_writer

@@ -5,7 +5,8 @@
     "receipt_regnoice_workflow": "./src/agent/receipt_regnoice_workflow.py:receipt_regnoice_workflow",
     "generate_image_workflow": "./src/agent/generate_image.py:generate_image_workflow",
     "contract_review_workflow": "./src/agent/contract_review_workflow.py:contract_review_workflow",
-    "financial_data_agent": "./src/agent/financial_data_agent.py:financial_data_agent"
+    "financial_data_agent": "./src/agent/financial_data_agent.py:financial_data_agent",
+    "generate_chart_workflow": "./src/agent/generate_chart_workflow.py:generate_chart_workflow"
   },
   "env": ".env"
 }
