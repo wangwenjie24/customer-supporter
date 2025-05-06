@@ -5,7 +5,7 @@ from typing import Literal
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import Command
 from langgraph.graph import StateGraph
-from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage, trim_messages
 from langchain_core.runnables import RunnableConfig
 from langgraph.config import get_stream_writer
 
@@ -139,11 +139,22 @@ def finalcial_data_research(state: State, config: RunnableConfig):
         
     # 格式化指令
     financial_data_researcher_instructions_formatted = financial_data_researcher_instructions.format(user_title=user_title)
-        
+    
+    # 构造消息列表
+    trimmed_messages = trim_messages(
+        state.messages,
+        strategy="last",
+        token_counter=len,
+        max_tokens=5,
+        start_on="human",
+        end_on=("human", "tool"),
+        include_system=True,
+    )
+
     # 构造消息列表
     messages = [
         SystemMessage(content=financial_data_researcher_instructions_formatted),
-        *state.messages
+        *trimmed_messages
     ]
     
     # 调用代理
@@ -178,9 +189,19 @@ def hr_data_research(state: State, config: RunnableConfig):
     hr_data_researcher_instructions_formatted = hr_data_researcher_instructions.format(user_title=user_title)
         
     # 构造消息列表
+    trimmed_messages = trim_messages(
+        state.messages,
+        strategy="last",
+        token_counter=len,
+        max_tokens=5,
+        start_on="human",
+        end_on=("human", "tool"),
+        include_system=True,
+    )
+    
     messages = [
         SystemMessage(content=hr_data_researcher_instructions_formatted),
-        *state.messages
+        *trimmed_messages
     ]
     
     # 调用代理

@@ -7,7 +7,7 @@ from typing_extensions import Literal
 from langgraph.prebuilt import ToolNode
 from langchain_core.tools import tool
 from langgraph.graph import StateGraph
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, trim_messages
 from langgraph.config import get_stream_writer
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnableConfig
@@ -65,6 +65,17 @@ def call_llm(state, config: RunnableConfig):
     # 格式化财务指令，插入用户职称
     financial_instructions_formatted = financial_instructions.format(user_title=user_title)
 
+    # 构造消息列表
+    trimmed_messages = trim_messages(
+        state.messages,
+        strategy="last",
+        token_counter=len,
+        max_tokens=5,
+        start_on="human",
+        end_on=("human", "tool"),
+        include_system=True,
+    )
+
     # 调用大语言模型并绑定工具
     response = ChatOpenAI(
         model_name=os.getenv("OPENROUTER_MODEL_NAME"),
@@ -74,7 +85,7 @@ def call_llm(state, config: RunnableConfig):
         tags=["call_financial"]
     ).bind_tools([query_policy]).invoke([
         SystemMessage(content=financial_instructions_formatted),
-        *state.messages
+        *trimmed_messages
     ])
     return {"messages": [response]}
 
