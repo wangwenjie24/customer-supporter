@@ -25,7 +25,7 @@ from agent.prompts import financial_data_researcher_instructions, hr_data_resear
 dotenv.load_dotenv()
 
 
-def router(state: State) -> Command[Literal["hr_agent", "financial_agent", "corporate_legal_agent", "receipt_regnoice", "generate_image", "finalcial_data_research", "hr_data_research", "meeting_summary_agent"]]:
+def router(state: State) -> Command[Literal["hr_agent", "financial_agent", "corporate_legal_agent", "receipt_regnoice", "generate_image", "finalcial_data_research", "hr_data_research", "meeting_summary"]]:
     """
     路由函数，根据state.action决定将请求路由到哪个代理
     
