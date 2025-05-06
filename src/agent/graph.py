@@ -14,7 +14,7 @@ from agent.configuration import Configuration
 from agent.hr_agent import hr_agent
 from agent.financial_agent import financial_agent
 from agent.receipt_regnoice_workflow import receipt_regnoice_workflow
-# from agent.finacial_data_query_workflow import finacial_data_query_workflow
+from agent.meeting_summary_workflow import meeting_summary_workflow
 from agent.financial_data_agent import financial_data_agent
 from agent.hr_data_agent import hr_data_agent
 from agent.generate_image import generate_image_workflow
@@ -25,7 +25,7 @@ from agent.prompts import financial_data_researcher_instructions, hr_data_resear
 dotenv.load_dotenv()
 
 
-def router(state: State) -> Command[Literal["hr_agent", "financial_agent", "corporate_legal_agent", "receipt_regnoice", "generate_image", "finalcial_data_research", "hr_data_research"]]:
+def router(state: State) -> Command[Literal["hr_agent", "financial_agent", "corporate_legal_agent", "receipt_regnoice", "generate_image", "finalcial_data_research", "hr_data_research", "meeting_summary_agent"]]:
     """
     路由函数，根据state.action决定将请求路由到哪个代理
     
@@ -71,6 +71,11 @@ def router(state: State) -> Command[Literal["hr_agent", "financial_agent", "corp
             update={"messages": state.messages},
             goto="hr_data_research"
         )
+    elif state.action == "meeting_summary_agent":
+      return Command(
+            update={"messages": state.messages[-1]},
+            goto="meeting_summary"
+        )
     else:
         raise ValueError(f"Invalid action: {state.action}")
 
@@ -101,6 +106,17 @@ def generate_image(state: State):
     """
     result = generate_image_workflow.invoke({"prompt": state.messages[-1].content, "action": "generate_image"})
     return {"messages": [AIMessage(content=result["urls"][0])]}
+
+
+def meeting_summary(state: State):
+    """
+    会议总结代理，根据会议记录生成总结
+    
+    Args:
+        state: 当前状态对象
+    """
+    result = meeting_summary_workflow.invoke({"url": state.messages[-1].content})
+    return {"messages": [AIMessage(content=result["final_summary"])]}
 
 
 def finalcial_data_research(state: State, config: RunnableConfig):
