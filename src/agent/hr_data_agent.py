@@ -197,7 +197,7 @@ llm = ChatOpenAI(
 )
 
 # 创建代理构建器
-builder = create_agent(llm, tool_registry)
+builder = create_agent(llm, tool_registry, limit=4)
 
 # 编译代理
 hr_data_agent = builder.compile(store=store, name="hr_data_agent")

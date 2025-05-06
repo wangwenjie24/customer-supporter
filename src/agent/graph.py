@@ -73,7 +73,7 @@ def router(state: State) -> Command[Literal["hr_agent", "financial_agent", "corp
         )
     elif state.action == "meeting_summary_agent":
       return Command(
-            update={"messages": state.messages[-1]},
+            update={"messages": f"生成会议纪要, 音频url：{state.meeting_audio}", "meeting_audio": state.meeting_audio},
             goto="meeting_summary"
         )
     else:
@@ -115,7 +115,7 @@ def meeting_summary(state: State):
     Args:
         state: 当前状态对象
     """
-    result = meeting_summary_workflow.invoke({"url": state.messages[-1].content})
+    result = meeting_summary_workflow.invoke({"url": state.meeting_audio})
     return {"messages": [AIMessage(content=result["final_summary"])]}
 
 
@@ -225,9 +225,10 @@ graph = builder.compile(name="Customer Supporter", checkpointer=checkpointer)
 
 # if __name__ == "__main__":
 #     # inputs = {"messages": [("user", "张剑锋所属单位及部门以及司龄是多少？")], "action": "hr_data_agent"}
-#     inputs = {"messages": [("user", "查询2024年2月佛山电器照明股份有限公司营业收入同比增长多少？")], "action": "financial_data_agent"}
+#     # inputs = {"messages": [("user", "查询2024年2月佛山电器照明股份有限公司营业收入同比增长多少？")], "action": "financial_data_agent"}
 #     # inputs = {"messages": [("user", "   请站在甲方角度分析以下合同文本中的法律风险。合同路径：http://47.251.17.61/saiyan-ai/system/file/downloadById?id=1914982139343204352")], "action": "corporate_legal_agent"}
 #     # inputs = {"messages": [("user", "")], "action": "receipt_regnoice_agent", "receipt_image":"https://cdn.nlark.com/yuque/0/2025/png/34020404/1741869817307-6e320d85-410f-4a16-aa6a-60e03dfa0efc.png?x-oss-process=image%2Fformat%2Cwebp%2Fresize%2Cw_1423%2Climit_0"}
+#     inputs = {"messages": [("user", "")], "action": "meeting_summary_agent", "meeting_audio":"https://wangwenjie24.oss-cn-beijing.aliyuncs.com/meeting_audio_225b2ae2-fda8-4d0b-8123-d6dad19d013f.wav?Expires=1746550189&OSSAccessKeyId=TMP.3KtAix2egakKAzUP1ejbKxoYfrbKNrhJwt6P7pynPU8cgEpxdagNgL1A6uDXSszN6axHpf9RY78VGjLDAXzTDZuhX3kC6F&Signature=oReqldxnkjytAMeq%2FB7q4K2UdBk%3D"}
 #     current_agent = None
 #     for stream_mode, streamed_output in graph.stream(inputs, stream_mode=["messages", "custom", "values"], config={"configurable": {"thread_id": "2", "user_id": "10001", "user_title": "万书记"}}):
 #         # 如果是代理的消息，显示代理名称和内容
@@ -241,10 +242,10 @@ graph = builder.compile(name="Customer Supporter", checkpointer=checkpointer)
 #                 print(chunk.content, end="", flush=True)
 
 
-#         # if stream_mode == "messages" and isinstance(streamed_output, tuple) and len(streamed_output) > 1:
-#         #     chunk, metadata = streamed_output
-#         #     if isinstance(chunk, AIMessageChunk) and chunk.content and "call_supervisor" not in metadata.get("tags", []) and "call_analyze_contract_risk" not in metadata.get("tags", []):
-#         #         print(chunk.content, end="", flush=True)
+        # if stream_mode == "messages" and isinstance(streamed_output, tuple) and len(streamed_output) > 1:
+        #     chunk, metadata = streamed_output
+        #     if isinstance(chunk, AIMessageChunk) and chunk.content and "call_supervisor" not in metadata.get("tags", []) and "call_analyze_contract_risk" not in metadata.get("tags", []):
+        #         print(chunk.content, end="", flush=True)
 
 
 # if __name__ == "__main__":

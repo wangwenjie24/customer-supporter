@@ -74,7 +74,7 @@ def transcription(state: State, config: RunnableConfig) -> Dict[str, Any]:
     return {"text": text_content}
 
 
-def summary(state: State, config: RunnableConfig) -> str:
+def finalinze_output(state: State, config: RunnableConfig) -> str:
     """Extend the prompt"""
     writer = get_stream_writer()
     writer({"action": "生成会议纪要"})
@@ -100,12 +100,12 @@ workflow = StateGraph(State, input=InputState, output=OutputState, config_schema
 
 # Add the node to the graph
 workflow.add_node("transcription", transcription)
-workflow.add_node("summary", summary)
+workflow.add_node("finalinze_output", finalinze_output)
 
 # Set the entrypoint as `call_model`
 workflow.add_edge("__start__", "transcription")
-workflow.add_edge("transcription", "summary")
-workflow.add_edge("summary", "__end__")
+workflow.add_edge("transcription", "finalinze_output")
+workflow.add_edge("finalinze_output", "__end__")
 
 # Compile the workflow into an executable graph
 meeting_summary_workflow = workflow.compile(name="meeting_summary_workflow")

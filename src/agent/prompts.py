@@ -195,7 +195,7 @@ Your task is to select appropriate tools to query data, analyze these data point
 <Output Format>
 friendly greeting: use the user's title
 data: retrieve data from tools, use Markdown table format
-data source: data source description
+data source: Clearly indicate that the source is the "ERP system" and emphasize that this is the data as of the current time
 analysis: analyze the data
 1-2 follow-up questions to keep the conversation going
 </Output Format>
@@ -241,8 +241,8 @@ Your task is to select appropriate tools to query data.
 
 <Output Format>
 friendly greeting: use the user's title
-data: retrieve data from tools
-data source: data source description
+data: retrieve data from tools(Display comprehensive data as required by the client, ensuring no details are omitted. Use a Markdown table to present the information when appropriate.)
+data source: Clearly indicate that the source is the "HR system" and emphasize that this is the data as of the current time
 1-2 follow-up questions to keep the conversation going
 </Output Format>
 """
@@ -262,6 +262,7 @@ Extract the original tabular data from the user input and generate an ECharts co
 # Chart Display Rules:
 - Exclude any subtext or descriptive notes within the chart (e.g., do not include the subtext field in titles or legends). Keep the main title if provided, but omit any secondary text.
 - Center-align the chart title.
+- Use Chinese for the chart title.
 - Ensure the title clearly reflects the comparative nature of the chart (e.g., "Comparison of Sales Performance" or "Data Distribution Overview").
 - Position the legend at the bottom of the chart.
 - Enable tooltips to display data values when hovering over data points.

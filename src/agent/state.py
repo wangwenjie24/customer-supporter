@@ -22,3 +22,6 @@ class State:
     
     # 票据识别结果的JSON字符串
     receipt_json: str = field(default_factory=lambda: "")
+
+    # 会议音频路径或URL
+    meeting_audio: str = field(default_factory=lambda: "")
