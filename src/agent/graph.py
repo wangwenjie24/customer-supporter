@@ -204,6 +204,7 @@ builder.add_node("finalcial_data_research", finalcial_data_research)
 builder.add_node("generate_image", generate_image)
 builder.add_node("receipt_regnoice", receipt_regnoice)
 builder.add_node("hr_data_research", hr_data_research)
+builder.add_node("meeting_summary", meeting_summary)    
 
 # 添加边，定义节点间的连接关系
 builder.add_edge("__start__", "router")
@@ -214,7 +215,7 @@ builder.add_edge("finalcial_data_research", "__end__")
 builder.add_edge("hr_data_research", "__end__")
 builder.add_edge("receipt_regnoice", "__end__")
 builder.add_edge("generate_image", "__end__")
-
+builder.add_edge("meeting_summary", "__end__")
 # 编译并运行图
 checkpointer = MemorySaver()
 graph = builder.compile(name="Customer Supporter", checkpointer=checkpointer)
