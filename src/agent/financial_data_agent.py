@@ -4,6 +4,7 @@ import json
 import pymysql
 import redis
 import uuid
+import requests
 
 from langgraph.store.memory import InMemoryStore
 from langgraph_bigtool import create_agent
@@ -147,16 +148,25 @@ for item in tool_list:
     tool_description = tool_info_data["tool_desc"]
     tool_args_schema = json.loads(tool_info_data["args_schema"])
     
+    tool_id = tool_info_data["tool_id"]
+    
     # 动态创建函数对象
     tool_func = create_function(tool_name, tool_body)
     
-    # 注册为结构化工具
-    tool_registry[str(uuid.uuid4())] = StructuredTool.from_function(
+    tool_registry[tool_id] = StructuredTool.from_function(
         tool_func,
         name=tool_name,
         description=tool_description,
         args_schema=tool_args_schema
     )
+
+    # 注册为结构化工具
+    # tool_registry[str(uuid.uuid4())] = StructuredTool.from_function(
+    #     tool_func,
+    #     name=tool_name,
+    #     description=tool_description,
+    #     args_schema=tool_args_schema
+    # )
 
 
 # =================== 向量存储初始化 ===================
@@ -176,15 +186,60 @@ store = InMemoryStore(
     }
 )
 
-# 将工具信息存入向量存储
-for tool_id, tool in tool_registry.items():
-    store.put(
-        ("tools",),
-        tool_id,
-        {
-            "description": str(f"{tool.name}: {tool.description}"),  # 确保转换为字符串
-        },
-    )
+# def process_description(description: str):
+#     tool_desc = description.replace('\r\n','\n').replace('\n','')
+#     first_line = tool_desc.split('。')[0].replace('功能描述：', '').strip()
+#     return first_line
+
+
+# # 将工具信息存入向量存储
+# for tool_id, tool in tool_registry.items():
+#     store.put(
+#         ("tools",),
+#         tool_id,
+#         {
+#             "description": process_description(tool.description),  # 确保转换为字符串
+#         },
+#     )
+
+# def retrieve_tools_function(query: str, limit: int = 4):
+#     """Retrieve a tool to use, given a search query."""
+
+#     # 使用向量存储进行相似度搜索
+#     results = store.search(
+#         ("tools",),
+#         query=query,
+#         limit=limit
+#     )
+    
+#     for result in results:
+#         print("=====================",result.key)
+#         print("=====================",result.value)
+#         print("=====================",result.score)
+#         print("=====================",result.created_at)
+#         print("=====================",result.updated_at)
+
+#     # 从结果中提取工具ID
+#     tool_ids = [result.key for result in results]
+
+#     # 返回对应的工具
+#     return tool_ids
+
+def retrieve_tools_function(query: str, limit: int = 5):
+    """Retrieve a tool to use, given a search query."""
+    
+        # 调用知识库API检索HR制度信息
+    klResponse = requests.get(f'http://47.251.17.61/saiyan-ai/ai/knowledge/1920454146381070336/search?query={query}&recall={limit}')
+    data = klResponse.json()['data']
+       # 格式化检索结果
+    tool_ids = []
+    for index, item in enumerate(data):
+        tool_ids.append(item["answer"])
+        print("tool_ids",item["question"] + "：" + str(item["score"]))
+    
+    print("tool_ids",tool_ids)
+    # 返回对应的工具
+    return tool_ids
 
 # =================== 代理初始化 ===================
 llm = ChatOpenAI(
@@ -196,7 +251,7 @@ llm = ChatOpenAI(
 
 
 # 创建代理构建器
-builder = create_agent(llm, tool_registry, limit=4)
+builder = create_agent(llm, tool_registry, limit=4, retrieve_tools_function=retrieve_tools_function)
 
 # 编译代理
 financial_data_agent = builder.compile(store=store, name="financial_data_agent")
