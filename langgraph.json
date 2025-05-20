@@ -7,7 +7,11 @@
     "contract_review_workflow": "./src/agent/contract_review_workflow.py:contract_review_workflow",
     "financial_data_agent": "./src/agent/financial_data_agent.py:financial_data_agent",
     "generate_chart_workflow": "./src/agent/generate_chart_workflow.py:generate_chart_workflow",
-    "meeting_summary_workflow": "./src/agent/meeting_summary_workflow.py:meeting_summary_workflow"
+    "meeting_summary_workflow": "./src/agent/meeting_summary_workflow.py:meeting_summary_workflow",
+    "employment_contract_review_workflow": "./src/agent/employment_contract_review_workflow.py:employment_contract_review_workflow",
+    "interview_plan_generate_workflow": "./src/agent/interview_plan_generate_workflow.py:interview_plan_generate_workflow",
+    "recruitment_workflow": "./src/agent/recruitment_workflow.py:recruitment_workflow",
+    "resume_workflow": "./src/agent/resume_workflow.py:resume_workflow"
   },
   "env": ".env"
 }

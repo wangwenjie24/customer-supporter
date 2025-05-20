@@ -21,7 +21,8 @@ dependencies = [
     "redis>=5.2.1",
     "langgraph_bigtool>=0.0.2",
     "PyMySQL>=1.1.1",
-    "redis>=5.2.1"
+    "redis>=5.2.1",
+    "pymupdf4llm>=0.0.24"
 ]
 
 
