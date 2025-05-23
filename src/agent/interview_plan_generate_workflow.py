@@ -12,6 +12,8 @@ from langgraph.graph import StateGraph
 from langgraph.config import get_stream_writer
 from langchain_openai import ChatOpenAI
 
+from agent.utils import process_markdown
+
 # 加载环境变量
 dotenv.load_dotenv()
 
@@ -45,12 +47,12 @@ extract_resume_instructions = """你是一名专业的人力资源信息提取�
             "duration": "工作时间"
         }}],
     }},
-    "project_experience": {{
+    "project_experience": [{{
         "name": "项目名称",
         "description": "项目描述",
         "responsibilities": "项目职责",
         "outcomes": "项目成果"
-    }},
+    }}],
     "ability": [
         "能力1说明",
         "能力2说明",
@@ -84,9 +86,21 @@ extract_job_description_instructions = """你是一名专业的人力资源信�
     "name": "岗位名称",
     "description": "岗位描述",
     "requirements": {{
-        "responsibilities": "任职职责",
-        "conditions": "硬性条件",
-        "qualities": "核心素质"
+        "responsibilities": [
+            "任职职责1",
+            "任职职责2",
+            "任职职责3"
+        ],
+        "conditions": [
+            "硬性条件1",
+            "硬性条件2",
+            "硬性条件3"
+        ],
+        "qualities": [
+            "核心素质1",
+            "核心素质2",
+            "核心素质3"
+        ]
     }}
 }}
 
@@ -179,6 +193,7 @@ class ProjectExperience(BaseModel):
     name: str = Field(description="The name of the project", default="")
     description: str = Field(description="The description of the project", default="")
     responsibilities: str = Field(description="The responsibilities of the project", default="")
+    
     outcomes: str = Field(description="The outcomes of the project", default="")
 
 class ResumeInfo(BaseModel):
@@ -191,9 +206,9 @@ class ResumeInfo(BaseModel):
     highest_education: str = Field(description="The highest education of the candidate", default="")
 
 class Requirements(BaseModel):
-    responsibilities: list[str] = Field(description="The responsibilities of the job", default="")
-    conditions: list[str] = Field(description="The conditions of the job", default="")
-    qualities: list[str] = Field(description="The qualities of the job", default="")
+    responsibilities: list[str] = Field(description="The responsibilities of the job", default=[])
+    conditions: list[str] = Field(description="The conditions of the job", default=[])
+    qualities: list[str] = Field(description="The qualities of the job", default=[])
 
 class JobInfo(BaseModel):
     name: str = Field(description="The name of the job", default="")
@@ -244,7 +259,7 @@ class InterviewPlanOutputState:
     job_info: JobInfo = None    # 岗位信息
     questions: list[str] = None    # 问题列表
     interview_process: InterviewProcess = None    # 面试流程
-    interview_doc: str = ""    # 面试文档
+    interview_url: str = ""    # 面试方案url
 
 def load_info(state: InterviewPlanState) -> str:
     """加载信息"""
@@ -415,8 +430,10 @@ def generate_plan(state: InterviewPlanState) -> str:
     for step in interview_process.steps:
         interview_doc += f"- **{step.step}** ({step.duration})：{step.content}\n\n"
 
+    url = process_markdown(interview_doc, 'docx', True, f"{resume_info['name']}的面试方案")
+
     writer({"action": {"type": "generate_plan", "state": "end"}})
-    return {"interview_doc": interview_doc, "interview_process": interview_process}
+    return {"interview_url": url, "interview_process": interview_process}
 
 # 构建合同风险分析工作流
 workflow = StateGraph(state_schema=InterviewPlanState, input=InterviewPlanInputState, output=InterviewPlanOutputState)

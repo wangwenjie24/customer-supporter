@@ -11,7 +11,11 @@
     "employment_contract_review_workflow": "./src/agent/employment_contract_review_workflow.py:employment_contract_review_workflow",
     "interview_plan_generate_workflow": "./src/agent/interview_plan_generate_workflow.py:interview_plan_generate_workflow",
     "recruitment_workflow": "./src/agent/recruitment_workflow.py:recruitment_workflow",
-    "resume_workflow": "./src/agent/resume_workflow.py:resume_workflow"
+    "resume_workflow": "./src/agent/resume_workflow.py:resume_workflow",
+    "wenshu": "./src/agent/wenshu.py:wenshu"
   },
-  "env": ".env"
+  "env": ".env",
+  "dockerfile_lines": [
+    "RUN apt-get update && apt-get install -y pandoc"
+  ]
 }

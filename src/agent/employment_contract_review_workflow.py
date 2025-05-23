@@ -4,13 +4,15 @@ import tempfile
 import dotenv
 import pymupdf4llm
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from langchain_core.messages import SystemMessage, HumanMessage
 from langgraph.graph import StateGraph
 
 from langgraph.config import get_stream_writer
 from langchain_openai import ChatOpenAI
+
+from agent.utils import process_markdown
 
 
 evaluate_instructions = """你是一名人资专家，熟悉《劳动合同法》及相关劳动法规，擅长从专业角度审查劳动合同条款，识别法律漏洞、权责失衡、表述模糊等问题，并提出合规建议，帮助企业规避用工风险。
@@ -109,8 +111,8 @@ dotenv.load_dotenv()
 @dataclass
 class RiskAnalysisState:
     contract_file_path: str  # 合同文件路径
-    contract_content: str    # 合同内容
-    review_dimensions: list[str]    # 审查纬度
+    contract_content: str = ""    # 合同内容
+    review_dimensions: list[str] = field(default_factory=list)    # 审查纬度
     review_result: str = ""  # 审核结果
 
 # 定义合同风险分析输入状态类
@@ -123,7 +125,7 @@ class RiskAnalysisInputState:
 @dataclass
 class RiskAnalysisOutputState:
     review_result: str  # 审核结果
-    report: str  # 审核报告
+    report_url: str  # 审核报告url
 
 
 def load(state: RiskAnalysisState) -> str:
@@ -200,8 +202,10 @@ def generate_report(state: RiskAnalysisState) -> str:
         SystemMessage(content=reporter_instructions),
         HumanMessage(content=review_result)
     ])
+
+    url = process_markdown(response.content, 'docx', True, "劳动合同评估报告")
     writer({"action": {"type": "generate_report", "state": "end"}})
-    return {"report": response.content}
+    return {"report_url": url}
 
 
 # 构建合同风险分析工作流

@@ -18,7 +18,6 @@ from agent.contract_review_workflow import contract_review_workflow
 # 加载环境变量
 dotenv.load_dotenv()
 
-
 @tool
 def review_contract(contract_file_path: str, analysis_angle: str) -> str:
     """Review the contract content and identify potential legal risk points.

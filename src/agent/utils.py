@@ -2,6 +2,11 @@ import base64
 import requests
 import os.path
 import dotenv
+import subprocess
+import os
+from datetime import datetime
+import tempfile
+from minio import Minio
 
 dotenv.load_dotenv()
 
@@ -64,3 +69,116 @@ def image_to_base64(image_path: str) -> str:
             content_type = content_type_map.get(ext, 'image/jpeg')
             
             return f"data:{content_type};base64,{base64_data}"
+
+
+def convert_markdown_to_doc(markdown_content, output_format='docx', file_name=""):
+    """
+    将Markdown内容转换为Word或PDF文档
+    
+    Args:
+        markdown_content: Markdown格式的文本内容
+        output_format: 输出格式，支持'docx'或'pdf'
+    Returns:
+        output_path: 输出文件路径
+    """
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    output_path = f'{file_name}_{timestamp}.{output_format}'
+    
+    # 创建临时文件存储markdown内容
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as temp_file:
+        temp_file.write(markdown_content)
+        temp_file_path = temp_file.name
+    
+    try:
+        if output_format == 'docx':
+            subprocess.run([
+                'pandoc',
+                temp_file_path,
+                '-o', output_path
+            ], check=True)
+        elif output_format == 'pdf':
+            subprocess.run([
+                'pandoc',
+                temp_file_path,
+                '-o', output_path,
+                '--pdf-engine=xelatex',
+                '--highlight-style=pygments'
+            ], check=True)
+        print(f"成功生成{output_format.upper()}文档: {output_path}")
+        return output_path
+    except subprocess.CalledProcessError as e:
+        print(f"转换失败: {e}")
+        return None
+    finally:
+        # 清理临时文件
+        os.unlink(temp_file_path)
+
+def upload_to_minio(file_path, minio_path=None):
+    """
+    上传文件到MinIO
+    
+    Args:
+        file_path: 本地文件路径
+        minio_path: MinIO上的存储路径，如果为None则使用文件名
+    Returns:
+        url: 文件访问URL
+    """
+    if minio_path is None:
+        minio_path = os.path.basename(file_path)
+    print("Bu", os.getenv('MINIO_BUCKET_NAME'))
+    print(minio_path)
+    print(file_path)
+    print(os.getenv('MINIO_ENDPOINT'))
+    try:
+        
+        client = Minio(
+            os.getenv('MINIO_ENDPOINT'),
+            access_key=os.getenv('MINIO_ACCESS_KEY'),
+            secret_key=os.getenv('MINIO_SECRET_KEY'),
+            secure=False  # 如果使用HTTPS则设为True
+        )
+        
+        # 确保bucket存在
+        bucket_name = os.getenv('MINIO_BUCKET_NAME')
+        if not client.bucket_exists(bucket_name):
+            client.make_bucket(bucket_name)
+        # 上传文件
+        client.fput_object(
+            bucket_name,
+            minio_path,
+            file_path
+        )
+        print(f"文件已成功上传到MinIO: {minio_path}")
+        
+        # 生成访问URL
+        url = f"http://{os.getenv('MINIO_ENDPOINT')}/{bucket_name}/{minio_path}"
+        return url
+        
+    except Exception as e:
+        print(f"上传失败: {str(e)}")
+        return None
+
+def process_markdown(markdown_content, output_format='docx', upload=True, file_name="劳动合同评估报告"):
+    """
+    处理Markdown内容：转换格式并上传到OSS
+    
+    Args:
+        markdown_content: Markdown格式的文本内容
+        output_format: 输出格式，支持'docx'或'pdf'
+        upload: 是否上传到OSS
+    Returns:
+        url: 如果上传成功则返回文件URL，否则返回None
+    """
+    # 转换文件
+    output_path = convert_markdown_to_doc(markdown_content, output_format, file_name)
+    if not output_path:
+        return None
+        
+    # 上传到OSS
+    if upload:
+        url = upload_to_minio(output_path)
+        # 清理本地文件
+        os.remove(output_path)
+        return url
+    
+    return output_path

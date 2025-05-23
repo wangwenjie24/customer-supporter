@@ -57,29 +57,31 @@ def is_empty(s):
     return s is None or isinstance(s, str) and len(s.strip()) == 0
 
 def get_content_by_url(url: str):
-    """
-    根据URL获取文件内容
-    """
 
-    content = ""
-    temp_file_path = ""
-
+    print(f'URL:{url}')
     # 发送HTTP请求获取文件数据
     response = requests.get(url)
     response.raise_for_status()  # 检查请求是否成功
+    temp_file_path = ''
 
-    # 创建一个临时文件
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        temp_file_path = temp_file.name
+    # 创建一个临时文件并写入数据
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
         temp_file.write(response.content)
-
-    try:
-        # 根据文件的类型以适当的方式读取文件内容
-        content = pymupdf4llm.to_markdown(temp_file_path)
-    finally:
-        # 确保无论是否发生异常都删除临时文件
-        os.unlink(temp_file_path)
+        temp_file.flush()
+        os.fsync(temp_file.fileno())
+        temp_file_path = temp_file.name
     
+    print(f'temp_file_path:{temp_file_path}')
+    
+    # 使用 pymupdf4llm 将 PDF 转换为 Markdown 格式的文本
+    content = pymupdf4llm.to_markdown(temp_file_path)
+
+    # 最后记得清理
+    try:
+        os.unlink(temp_file_path)
+    except Exception as e:
+        print("删除临时文件失败:", e)
+        
     return content
 
 def request_llm(system_content: str, user_content: str):
@@ -158,11 +160,36 @@ def get_resume_score_system_content(scoring_rules: str):
             10.简历整体内容完善程度，包括但不限于姓名、求职意向、工作年限、年龄、电话、邮箱、教育背景、工作经历等，内容越完善分数越高。
             以上10条规则，每条规则最高可得10分，及格6分，最低得1分；所有规则总计满分100分。
         """
+    else:
+        scoring_rules_json = json.loads(scoring_rules)
+        rules_txt = []
+
+        for item in scoring_rules_json:
+            score = item['value']
+            if item['name'] == '教育背景':
+                rules_txt.append(f'教育背景：变量名为“educational_background”，识别并对比应聘者的学历、专业以及毕业院校等信息，同时也能理解招聘要求中对教育背景的具体需求，最高得分{score}分。')
+            elif item['name'] == '薪资期望':
+                rules_txt.append(f'薪资期望：变量名为“expected_salary”，分析简历中的期望薪资范围和招聘信息中的提供的薪资待遇，评估两者之间的匹配度，最高得分{score}分。')
+            elif item['name'] == '工作经验':
+                rules_txt.append(f'工作经验：变量名为“work_experience”，这项包括了过去的相同行业工作经历、相同职位以及在职时间等。提取这些相关工作或专业信息，并将其与招聘信息中的经验要求进行比较，最高得分{score}分。')
+            elif item['name'] == '技能能力':
+                rules_txt.append(f'技能能力：变量名为“skills_abilities”，涉及具体的技能（如编程语言、软件操作能力等）。识别出简历中列出的技能，并判断它们是否符合招聘岗位的要求，最高得分{score}分。')
+            elif item['name'] == '证书和资格':
+                rules_txt.append(f'证书和资格：变量名为“certifications_qualifications”，任何相关的行业认证或资格证明。识别这些证书，并评估其对于申请职位的相关性和重要性，最高得分{score}分。')
+            else:
+                print(f"未找到相关评价指标：{item['name']}")
+                continue
+        scoring_rules = '\n'.join(rules_txt)
 
     system_content = """你是佛山照明公司人力资源部门的简历助手，擅长筛选简历信息，筛选规则如下：""" + scoring_rules + """
-    请根据标签 <招聘信息></招聘信息> 和 <简历信息></简历信息> 对简历进行分析和评分；并返回JSON格式的结果，包含评分变量名为“resume_rating“，评价结果变量名为“evaluate_results“，只需要返回JSON数据即可，不需要进行解释。
+    请根据标签 <招聘信息></招聘信息> 和 <简历信息></简历信息> 对简历进行分析和评分；并返回JSON格式的结果，包含根据规则得到的每一项评分数；总评分变量名为“resume_rating“；评价结果变量名为“evaluate_results“，需要包含每一项的得分原因简述并使用“\n“换行，然后再进行总结。只需要返回JSON数据即可，不需要进行解释。
     返回格式示例如下：
     {
+        "educational_background": "15",
+        "expected_salary": "20",
+        "work_experience": "15",
+        "skills_abilities": "20",
+        "certifications_qualifications": "15",
         "resume_rating": "85",
         "evaluate_results": "该应聘者具备出色的沟通能力和团队合作精神，工作态度积极主动，富有责任心。拥有相关项目经验，并展现出较强的学习能力和解决问题的技巧"
     }
